@@ -1,5 +1,5 @@
 # 使用 PHP 5.6 官方镜像
-FROM php:5.6-fpm
+FROM wenxingq/php:5.6-fpm-redis
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive \
