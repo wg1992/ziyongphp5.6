@@ -1,39 +1,19 @@
-# 使用基于 Debian Jessie 的官方 PHP 5.6 镜像，而非 Alpine
-FROM php:5.6-fpm
+# 使用已验证可用的第三方镜像，预装 PHP 5.6 FPM 及常用扩展 (redis, gd, mysqli 等)
+FROM zlilizh/phpfpm5.6:latest
 
-# 设置环境变量
-ENV DEBIAN_FRONTEND=noninteractive \
-    TZ=Asia/Shanghai
+# 设置环境变量（时区）
+ENV TZ=Asia/Shanghai
 
-# 1. 更新源并安装系统依赖（使用 Debian 的 apt）
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    libcurl4-openssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+# 1. 根据您的要求，禁用 shell_exec 函数
+RUN echo "disable_functions = shell_exec" >> /usr/local/etc/php/conf.d/disable.ini
 
-# 2. 配置并安装 PHP 的 GD 库（关键步骤）
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd
+# 2. 设置时区
+RUN echo "date.timezone = ${TZ}" > /usr/local/etc/php/conf.d/timezone.ini
 
-# 3. 安装其他必需的 PHP 扩展
-RUN docker-php-ext-install pdo_mysql mysqli zip curl
-
-# 4. 通过 PECL 安装指定版本的 Redis 扩展
-RUN pecl install redis-2.2.8 \
-    && docker-php-ext-enable redis
-
-# 5. 根据您的要求，禁用 shell_exec 函数
-RUN echo "disable_functions = shell_exec" >> /usr/local/etc/php/conf.d/docker-php-disable-funcs.ini
-
-# 6. 复制您的自定义 PHP 配置
+# 3. 复制您的自定义 PHP 配置（如果存在，会覆盖基础配置）
 COPY php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
-# 7. 设置工作目录和权限
+# 设置工作目录和权限
 WORKDIR /var/www/html
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
