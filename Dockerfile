@@ -26,7 +26,8 @@ RUN mkdir -p /data/redis \
     && echo "dir /data/redis" >> /etc/redis/redis.conf
 
 # 3. 启用 shell_exec 函数 (根据您的要求)
-RUN sed -i 's/^disable_functions.*shell_exec.*//' /usr/local/etc/php/php.ini \
+# 使用更稳健的方式：在配置中明确设置允许 shell_exec
+RUN echo "disable_functions = " > /usr/local/etc/php/conf.d/enable-shell-exec.ini \
     && echo "已解除 shell_exec 函数禁用"
 
 # 4. 安装并启用 SourceGuardian (SG15) 加载器
