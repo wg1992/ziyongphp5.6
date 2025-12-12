@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: web-api-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - web-network
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: yourusername/web-api-php:latest
+    container_name: web-api-php
+    volumes:
+      - ./src:/var/www/html
+      - php_sessions:/tmp
+    environment:
+      - TZ=Asia/Shanghai
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - web-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:5-alpine
+    container_name: web-api-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - web-network
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+    restart: unless-stopped
+
+  # 可选：phpMyAdmin（如果需要数据库管理）
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: web-api-phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    networks:
+      - web-network
+    restart: unless-stopped
+
+networks:
+  web-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
+  php_sessions:
+    driver: local

@@ -1,0 +1,13 @@
+.git/
+.github/
+__pycache__/
+*.log
+*.sql
+*.env
+node_modules/
+vendor/
+.DS_Store
+Thumbs.db
+docker-compose.override.yml
+*.md
+.gitignore
