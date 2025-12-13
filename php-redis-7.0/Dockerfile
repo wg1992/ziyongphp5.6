@@ -1,5 +1,5 @@
 # 使用 PHP 7.4 FPM 基础镜像
-FROM php:7.4-fpm
+FROM zlilizh/phpfpm7.2:latest
 
 # 设置环境变量
 ENV TZ=Asia/Shanghai \
