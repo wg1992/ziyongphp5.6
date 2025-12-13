@@ -19,18 +19,27 @@ RUN apk update && apk add --no-cache \
     libzip-dev \
     libxml2-dev \
     curl-dev \
+    oniguruma-dev \
     # Redis 服务器
     redis \
     # 其他工具
     git \
-    unzip
+    unzip \
+    # 编译工具
+    gcc \
+    g++ \
+    make \
+    autoconf
 
 # 设置时区
 RUN cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone
 
-# 安装 PHP 扩展
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+# 安装 PHP 扩展（修复 gd 配置问题）
+# 注意：Alpine 中的路径不同，需要指定正确的 freetype 头文件路径
+RUN docker-php-ext-configure gd \
+    --with-freetype=/usr/include/ \
+    --with-jpeg=/usr/include/ && \
     docker-php-ext-install -j$(nproc) \
     gd \
     pdo_mysql \
@@ -66,12 +75,9 @@ COPY . /var/www/html/
 # 设置工作目录
 WORKDIR /var/www/html
 
-# 如果使用 Composer，可以取消下面的注释
-# RUN composer install --no-dev --optimize-autoloader --no-interaction
-
 # 设置权限（根据你的应用需求调整）
 RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+    chmod -R 755 /var/www/html
 
 # 优化 Redis 配置
 RUN echo 'maxmemory 256mb' >> /etc/redis.conf && \
