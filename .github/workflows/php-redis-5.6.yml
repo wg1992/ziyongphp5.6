@@ -45,12 +45,12 @@ jobs:
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v4
       with:
-        context: .
-        file: ./php-redis-5.6
+        context: ${{ env.IMAGE_NAME }}
+        file: ${{ env.IMAGE_NAME }}/Dockerfile
         push: ${{ github.event_name != 'pull_request' }} # PR时不推送
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/my-php-5.6:${{ steps.meta.outputs.unique_tag }}
-          ${{ secrets.DOCKER_USERNAME }}/my-php-5.6:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.unique_tag }}
+          ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
         labels: |
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.created=${{ steps.meta.outputs.date }}
