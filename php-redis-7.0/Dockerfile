@@ -57,7 +57,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 # 8. 复制 PHP 配置文件
-COPY php/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY php/ /usr/local/etc/php/conf.d/
 
 EXPOSE 9000
 
