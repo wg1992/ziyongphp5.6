@@ -56,9 +56,9 @@ RUN mkdir -p /var/www/html /data/redis /var/log/supervisor && \
     chown -R www-data:www-data /var/www/html /data/redis /var/log/supervisor
 
 # 复制配置文件
-COPY docker/php/conf.d/ /usr/local/etc/php/conf.d/
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/redis.conf /etc/redis.conf
+COPY php/conf.d/ /usr/local/etc/php/conf.d/
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY redis.conf /etc/redis.conf
 
 # 复制应用程序代码
 COPY . /var/www/html/
