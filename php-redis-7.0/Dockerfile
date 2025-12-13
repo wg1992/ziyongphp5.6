@@ -1,4 +1,4 @@
-# 使用 PHP 7.4 FPM 基础镜像（基于 Debian 10 Buster，源仍然有效）
+# 使用 PHP 7.4 FPM 基础镜像
 FROM php:7.4-fpm
 
 # 设置环境变量
@@ -9,7 +9,7 @@ ENV TZ=Asia/Shanghai \
 RUN apt-get update && apt-get install -y \
     curl \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     libxml2-dev \
     libzip-dev \
@@ -19,24 +19,26 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. 配置 PHP 扩展
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        pdo_mysql \
-        mysqli \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        zip \
-        opcache
+# 2. 配置 GD 扩展，使用传统参数
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 
-# 3. 安装 Redis 扩展
+# 3. 安装 PHP 扩展
+RUN docker-php-ext-install -j$(nproc) \
+    gd \
+    pdo_mysql \
+    mysqli \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    zip \
+    opcache
+
+# 4. 安装 Redis 扩展
 RUN pecl install redis-5.3.7 \
     && docker-php-ext-enable redis
 
-# 4. 配置 Redis
+# 5. 配置 Redis
 RUN mkdir -p /data/redis \
     && chown -R www-data:www-data /data/redis \
     && sed -i 's/^bind.*/bind 127.0.0.1/g' /etc/redis/redis.conf \
@@ -45,21 +47,21 @@ RUN mkdir -p /data/redis \
     && echo "maxmemory-policy allkeys-lru" >> /etc/redis/redis.conf \
     && echo "dir /data/redis" >> /etc/redis/redis.conf
 
-# 5. 创建 Supervisor 配置
+# 6. 创建 Supervisor 配置
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 6. 复制应用程序
+# 7. 复制应用程序
 COPY . /var/www/html/
 
-# 7. 设置工作目录和权限
+# 8. 设置工作目录和权限
 WORKDIR /var/www/html
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# 8. 复制 PHP 配置文件
+# 9. 复制 PHP 配置文件
 COPY php/ /usr/local/etc/php/conf.d/
 
 EXPOSE 9000
 
-# 9. 使用 Supervisor 启动服务
+# 10. 使用 Supervisor 启动服务
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
