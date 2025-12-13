@@ -46,11 +46,11 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: ./Dockerfile
+        file: ./php-5.7
         push: ${{ github.event_name != 'pull_request' }} # PR时不推送
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/my-php-app:${{ steps.meta.outputs.unique_tag }}
-          ${{ secrets.DOCKER_USERNAME }}/my-php-app:latest
+          ${{ secrets.DOCKER_USERNAME }}/my-php-5.7:${{ steps.meta.outputs.unique_tag }}
+          ${{ secrets.DOCKER_USERNAME }}/my-php-5.7:latest
         labels: |
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.created=${{ steps.meta.outputs.date }}
